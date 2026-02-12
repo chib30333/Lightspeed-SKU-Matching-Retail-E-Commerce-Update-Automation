@@ -17,7 +17,7 @@ namespace Dupont_Price_Lists.Models
         public string? VendorBrandField { get; set; }
 
         // Lightspeed file (File A)
-        public string LightspeedSkuField { get; set; } = "Manufact SKU";
+        public string LightspeedSkuField { get; set; } = "Manufact. SKU";
         public string LightspeedSystemIdField { get; set; } = "System ID";
         public string LightspeedCustomSkuField { get; set; } = "Custom SKU";
         public string LightspeedUpcField { get; set; } = "UPC";
@@ -25,7 +25,7 @@ namespace Dupont_Price_Lists.Models
         public string LightspeedEcomField { get; set; } = "Ecom"; // adjust if your export uses another header
 
         // Online file (File B)
-        public string OnlineSkuField { get; set; } = "Manufact SKU";
+        public string OnlineSkuField { get; set; } = "Manufact. SKU";
 
         // Brand/Vendor strategy
         public bool UseFixedBrand { get; set; }
@@ -39,7 +39,7 @@ namespace Dupont_Price_Lists.Models
 
         // Category
         public string CategorySeparator { get; set; } = " > ";
-        public List<string> CategoryScanFields { get; set; } = new() { "Description", "Finish", "Manufact SKU" };
+        public List<string> CategoryScanFields { get; set; } = new() { "Description", "Finish", "Manufact. SKU" };
 
         // Normalization options
         public bool UppercaseSku { get; set; } = true;
