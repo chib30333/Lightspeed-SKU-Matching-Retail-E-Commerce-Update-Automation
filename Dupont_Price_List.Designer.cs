@@ -77,6 +77,9 @@ namespace Dupont_Price_Lists
             ProgressBarUpdate = new ProgressBar();
             ComboBoxNewDimention = new ComboBox();
             LabelNewDimention = new Label();
+            ComboBoxNewFinish = new ComboBox();
+            LabelNewFinish = new Label();
+            TextStatus = new TextBox();
             Panel1.SuspendLayout();
             Panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DataGridViewMasterDiscountList).BeginInit();
@@ -420,7 +423,7 @@ namespace Dupont_Price_Lists
             // ComboBoxNewBrand
             // 
             ComboBoxNewBrand.FormattingEnabled = true;
-            ComboBoxNewBrand.Location = new Point(99, 543);
+            ComboBoxNewBrand.Location = new Point(99, 577);
             ComboBoxNewBrand.Name = "ComboBoxNewBrand";
             ComboBoxNewBrand.Size = new Size(235, 23);
             ComboBoxNewBrand.TabIndex = 29;
@@ -428,7 +431,7 @@ namespace Dupont_Price_Lists
             // LabelNewBrand
             // 
             LabelNewBrand.AutoSize = true;
-            LabelNewBrand.Location = new Point(52, 546);
+            LabelNewBrand.Location = new Point(52, 580);
             LabelNewBrand.Name = "LabelNewBrand";
             LabelNewBrand.Size = new Size(41, 15);
             LabelNewBrand.TabIndex = 30;
@@ -437,7 +440,7 @@ namespace Dupont_Price_Lists
             // CheckBoxUseField
             // 
             CheckBoxUseField.AutoSize = true;
-            CheckBoxUseField.Location = new Point(348, 545);
+            CheckBoxUseField.Location = new Point(348, 579);
             CheckBoxUseField.Name = "CheckBoxUseField";
             CheckBoxUseField.Size = new Size(73, 19);
             CheckBoxUseField.TabIndex = 31;
@@ -476,7 +479,7 @@ namespace Dupont_Price_Lists
             LabelPanel3Title.AutoSize = true;
             LabelPanel3Title.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             LabelPanel3Title.ForeColor = SystemColors.MenuHighlight;
-            LabelPanel3Title.Location = new Point(23, 592);
+            LabelPanel3Title.Location = new Point(23, 626);
             LabelPanel3Title.Name = "LabelPanel3Title";
             LabelPanel3Title.Size = new Size(192, 25);
             LabelPanel3Title.TabIndex = 36;
@@ -486,7 +489,7 @@ namespace Dupont_Price_Lists
             // 
             DataGridViewMasterDiscountList.BackgroundColor = SystemColors.HighlightText;
             DataGridViewMasterDiscountList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            DataGridViewMasterDiscountList.Location = new Point(13, 620);
+            DataGridViewMasterDiscountList.Location = new Point(12, 670);
             DataGridViewMasterDiscountList.Name = "DataGridViewMasterDiscountList";
             DataGridViewMasterDiscountList.Size = new Size(833, 139);
             DataGridViewMasterDiscountList.TabIndex = 37;
@@ -500,7 +503,7 @@ namespace Dupont_Price_Lists
             PanelUpdateField.Controls.Add(ButtonOnlineUpdate);
             PanelUpdateField.Location = new Point(440, 347);
             PanelUpdateField.Name = "PanelUpdateField";
-            PanelUpdateField.Size = new Size(406, 267);
+            PanelUpdateField.Size = new Size(406, 304);
             PanelUpdateField.TabIndex = 38;
             // 
             // DataGridViewRecord
@@ -509,13 +512,13 @@ namespace Dupont_Price_Lists
             DataGridViewRecord.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             DataGridViewRecord.Location = new Point(9, 65);
             DataGridViewRecord.Name = "DataGridViewRecord";
-            DataGridViewRecord.Size = new Size(387, 190);
+            DataGridViewRecord.Size = new Size(387, 226);
             DataGridViewRecord.TabIndex = 34;
             // 
             // ProgressBarUpdate
             // 
             ProgressBarUpdate.BackColor = SystemColors.HighlightText;
-            ProgressBarUpdate.Location = new Point(13, 761);
+            ProgressBarUpdate.Location = new Point(12, 811);
             ProgressBarUpdate.Name = "ProgressBarUpdate";
             ProgressBarUpdate.Size = new Size(834, 13);
             ProgressBarUpdate.TabIndex = 39;
@@ -527,7 +530,6 @@ namespace Dupont_Price_Lists
             ComboBoxNewDimention.Name = "ComboBoxNewDimention";
             ComboBoxNewDimention.Size = new Size(322, 23);
             ComboBoxNewDimention.TabIndex = 40;
-            ComboBoxNewDimention.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
             // LabelNewDimention
             // 
@@ -538,11 +540,40 @@ namespace Dupont_Price_Lists
             LabelNewDimention.TabIndex = 41;
             LabelNewDimention.Text = "Dimention:";
             // 
-            // FormDev_Matheus
+            // ComboBoxNewFinish
+            // 
+            ComboBoxNewFinish.FormattingEnabled = true;
+            ComboBoxNewFinish.Location = new Point(99, 542);
+            ComboBoxNewFinish.Name = "ComboBoxNewFinish";
+            ComboBoxNewFinish.Size = new Size(322, 23);
+            ComboBoxNewFinish.TabIndex = 42;
+            // 
+            // LabelNewFinish
+            // 
+            LabelNewFinish.AutoSize = true;
+            LabelNewFinish.Location = new Point(52, 545);
+            LabelNewFinish.Name = "LabelNewFinish";
+            LabelNewFinish.Size = new Size(41, 15);
+            LabelNewFinish.TabIndex = 43;
+            LabelNewFinish.Text = "Finish:";
+            // 
+            // TextStatus
+            // 
+            TextStatus.BackColor = SystemColors.Control;
+            TextStatus.BorderStyle = BorderStyle.None;
+            TextStatus.Location = new Point(672, 828);
+            TextStatus.Name = "TextStatus";
+            TextStatus.Size = new Size(172, 16);
+            TextStatus.TabIndex = 44;
+            // 
+            // Dupont_Price_List
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(858, 782);
+            ClientSize = new Size(858, 849);
+            Controls.Add(TextStatus);
+            Controls.Add(ComboBoxNewFinish);
+            Controls.Add(LabelNewFinish);
             Controls.Add(ComboBoxNewDimention);
             Controls.Add(LabelNewDimention);
             Controls.Add(ProgressBarUpdate);
@@ -568,7 +599,7 @@ namespace Dupont_Price_Lists
             Controls.Add(Panel2);
             Controls.Add(LabelPanel1Title);
             Controls.Add(Panel1);
-            Name = "FormDev_Matheus";
+            Name = "Dupont_Price_List";
             Text = "Dupont_Price_List";
             Panel1.ResumeLayout(false);
             Panel1.PerformLayout();
@@ -633,5 +664,8 @@ namespace Dupont_Price_Lists
         private DataGridView DataGridViewRecord;
         private ComboBox ComboBoxNewDimention;
         private Label LabelNewDimention;
+        private ComboBox ComboBoxNewFinish;
+        private Label LabelNewFinish;
+        private TextBox TextStatus;
     }
 }

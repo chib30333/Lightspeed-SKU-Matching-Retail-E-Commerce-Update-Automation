@@ -1,59 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ClosedXML.Excel;
 using Dupont_Price_Lists.Models;
 
-namespace Dupont_Price_Lists.Services
+namespace Dupont_Price_Lists.Services.Categories
 {
-    public sealed class CategoryResolverHierarchical
+    public interface ICategoryEngine
+    {
+        string? Resolve(ItemRecord record, IEnumerable<string> fieldsToScan);
+    }
+
+    public sealed class CategoryResolverHierarchical : ICategoryEngine
     {
         private List<CategoryToken> _tokens = new();
         private readonly string _separator;
 
         private sealed class CategoryToken
         {
-            public string Token = "";     // e.g., "glass shelves"
-            public string FullPath = "";  // e.g., "Bathroom > Accessories > Glass Shelves"
-            public int Depth;             // e.g., 3
+            public string Token = "";
+            public string FullPath = "";
+            public int Depth;
         }
 
-        public CategoryResolverHierarchical(
-            string xlsxPath,
-            string? sheetName,
-            string separator,
-            Func<string, string> normalizer // present for symmetry; not used in naive token build
-        )
+        private CategoryResolverHierarchical(string separator)
         {
             _separator = separator;
+        }
 
-            if(String.IsNullOrEmpty(xlsxPath) || !File.Exists(xlsxPath))
-            {
+        public static CategoryResolverHierarchical Load(string xlsxPath, string? sheetName, string separator)
+        {
+            if (string.IsNullOrEmpty(xlsxPath) || !System.IO.File.Exists(xlsxPath))
+                throw new InvalidOperationException("Empty category sheet.");
 
-            }
+            var engine = new CategoryResolverHierarchical(separator);
 
             using var wb = new XLWorkbook(xlsxPath);
             var ws = sheetName is null ? wb.Worksheets.First() : wb.Worksheet(sheetName);
 
             var firstRow = ws.FirstRowUsed() ?? throw new InvalidOperationException("Empty category sheet.");
-            var headers = firstRow.Cells().ToDictionary(c => c.GetString().Trim(), c => c.Address.ColumnNumber);
+            var headers = firstRow.CellsUsed().ToDictionary(c => c.GetString().Trim(), c => c.Address.ColumnNumber, StringComparer.OrdinalIgnoreCase);
 
-            if (headers.Keys.Any(h => string.Equals(h, "Path", StringComparison.OrdinalIgnoreCase)))
-                LoadFromPathColumn(ws, headers["Path"]);
+            if (headers.ContainsKey("Path"))
+                engine.LoadFromPathColumn(ws, headers["Path"]);
             else
-                LoadFromLevelColumns(ws);
+                engine.LoadFromLevelColumns(ws);
 
-            // Deduplicate
-            _tokens = _tokens.GroupBy(t => (t.Token, t.FullPath)).Select(g => g.First()).ToList();
+            engine._tokens = engine._tokens
+                .GroupBy(t => (t.Token, t.FullPath))
+                .Select(g => g.First())
+                .ToList();
+
+            return engine;
         }
 
-        public string? Resolve(ItemRecord vendor, params string[] fieldsToScan)
+        public string? Resolve(ItemRecord record, IEnumerable<string> fieldsToScan)
         {
-            var hay = string.Join(" ", fieldsToScan.Select(f => vendor.GetField(f) ?? ""))
-                             .Trim()
-                             .ToLowerInvariant();
+            var hay = string.Join(" ", fieldsToScan.Select(f => record.GetField(f) ?? ""))
+                .Trim()
+                .ToLowerInvariant();
 
             if (string.IsNullOrWhiteSpace(hay)) return null;
 
@@ -70,7 +75,8 @@ namespace Dupont_Price_Lists.Services
                 }
             }
 
-            return best?.Token;
+            // IMPORTANT: return FullPath, not token
+            return best?.FullPath;
         }
 
         private void LoadFromPathColumn(IXLWorksheet ws, int pathCol)
@@ -88,7 +94,6 @@ namespace Dupont_Price_Lists.Services
                     .ToList();
 
                 if (parts.Count == 0) continue;
-
                 var fullPath = string.Join(_separator, parts);
 
                 for (int i = 0; i < parts.Count; i++)
@@ -106,36 +111,27 @@ namespace Dupont_Price_Lists.Services
         private void LoadFromLevelColumns(IXLWorksheet ws)
         {
             int lastRow = ws.LastRowUsed().RowNumber();
-            List<string> categoryField = new List<string>();
+            var stack = new List<string>();
 
             for (int r = ws.FirstRowUsed().RowBelow().RowNumber(); r <= lastRow; r++)
             {
-                int deepLevel = 1;
-                var val = ws.Cell(r, 1).GetString().Trim();
+                var raw = ws.Cell(r, 1).GetString().Trim();
+                if (string.IsNullOrEmpty(raw)) continue;
 
-                if (!string.IsNullOrEmpty(val))
-                {
-                    var valArr = val.Split("--");
-                    deepLevel = valArr.Count();
+                // supports "--" indentation format
+                var level = raw.Split(new[] { "--" }, StringSplitOptions.None).Length;
+                var name = raw.Replace("-", "").Trim();
 
-                    if (deepLevel > categoryField.Count)
-                    {
-                        categoryField.Add(valArr.Last());
-                    }
-                    else
-                    {
-                        categoryField[deepLevel - 1] = valArr.Last();
-                        categoryField = categoryField.Slice(0, deepLevel);
-                    }
-                }
+                while (stack.Count >= level) stack.RemoveAt(stack.Count - 1);
+                stack.Add(name);
 
-                var fullPath = string.Join("", categoryField);
+                var fullPath = string.Join(_separator, stack);
 
                 _tokens.Add(new CategoryToken
                 {
-                    Token = categoryField[categoryField.Count - 1].ToLowerInvariant().Replace("> ", ""),
+                    Token = name.ToLowerInvariant(),
                     FullPath = fullPath,
-                    Depth = deepLevel
+                    Depth = stack.Count
                 });
             }
         }

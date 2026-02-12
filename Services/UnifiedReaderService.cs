@@ -1,22 +1,19 @@
 ﻿using Dupont_Price_Lists.Models;
+using Dupont_Price_Lists.Services.Readers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Dupont_Price_Lists.Services.FileReaderService;
 
 namespace Dupont_Price_Lists.Services
 {
     public static class UnifiedReaderService
     {
-        public static (List<string> headers, List<ItemRecord> rows) ReadAll(string filePath, int sheetIndex, string? brand, string? vendor)
+        public static (List<string> headers, List<ItemRecord> rows) ReadAll(string filePath, int sheetIndex)
         {
             var ext = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
             return ext switch
             {
-                ".xlsx" => ExcelReaderService.ReadAll(filePath, sheetIndex, brand, vendor),
-                ".csv" => CsvReaderService.ReadAll(filePath, sheetIndex, brand, vendor),
+                ".xlsx" => FileReaderService.ExcelReaderService.ReadAll(filePath, sheetIndex),
+                ".csv" => FileReaderService.CsvReaderService.ReadAll(filePath),
                 _ => throw new NotSupportedException("Only .xlsx and .csv are supported."),
             };
         }

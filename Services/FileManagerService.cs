@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Dupont_Price_Lists.Services
@@ -7,26 +8,29 @@ namespace Dupont_Price_Lists.Services
     {
         public static List<string>? OpenFile()
         {
-            List<string> paths = new List<string>();
-            using OpenFileDialog openFileDialog = new OpenFileDialog();
+            List<string> paths = new();
 
-            openFileDialog.Filter = "CSV files (*.csv)|*.csv|XLSX files (*.xlsx)|*.xlsx";
-            openFileDialog.Title = "Select a CSV or XLSX file";
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            using OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                paths.Add(openFileDialog.FileName);
+                Filter = "CSV files (*.csv)|*.csv|XLSX files (*.xlsx)|*.xlsx",
+                Title = "Select a CSV or XLSX file"
+            };
 
-                if (openFileDialog.FilterIndex == 1)
-                {
-                    var filename = Path.GetFileName(openFileDialog.FileName);
-                    string xlsxPath = "temp/" + filename.Replace(".csv", ".xlsx");
+            if (openFileDialog.ShowDialog() != DialogResult.OK)
+                return null;
 
-                    paths.Add(ConvertCsvToExcel.ReadCsvFile_WriteExcelFile(openFileDialog.FileName, xlsxPath));
-                }
-                return paths;
+            paths.Add(openFileDialog.FileName);
+
+            // If CSV, also convert to XLSX
+            if (Path.GetExtension(openFileDialog.FileName).ToLowerInvariant() == ".csv")
+            {
+                Directory.CreateDirectory("temp");
+                var filename = Path.GetFileName(openFileDialog.FileName);
+                string xlsxPath = Path.Combine("temp", filename.Replace(".csv", ".xlsx"));
+                paths.Add(ConvertCsvToExcel.ReadCsvFile_WriteExcelFile(openFileDialog.FileName, xlsxPath));
             }
-            return null;
+
+            return paths;
         }
     }
 }

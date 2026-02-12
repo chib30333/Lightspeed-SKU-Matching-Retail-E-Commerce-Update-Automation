@@ -1,32 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace Dupont_Price_Lists.Models
 {
     public class ItemRecord
     {
-        private readonly Dictionary<string, string> _fields = new();
+        private readonly Dictionary<string, string> _fields = new(StringComparer.OrdinalIgnoreCase);
 
         public void SetField(string key, string value)
         {
-            if (!_fields.ContainsKey(key))
-                _fields.Add(key, value);
-            else
-                _fields[key] = value;
+            if (string.IsNullOrWhiteSpace(key)) return;
+            _fields[key.Trim()] = value ?? "";
         }
 
         public string GetField(string key)
         {
-            return _fields.ContainsKey(key) ? _fields[key] : string.Empty;
+            if (string.IsNullOrWhiteSpace(key)) return "";
+            return _fields.TryGetValue(key.Trim(), out var v) ? (v ?? "") : "";
         }
 
-        public IReadOnlyDictionary<string, string> GetFields()
-        {
-            return _fields;
-        }
+        public IReadOnlyDictionary<string, string> GetFields() => _fields;
+
+        public bool HasField(string key) => _fields.ContainsKey(key);
     }
 }
