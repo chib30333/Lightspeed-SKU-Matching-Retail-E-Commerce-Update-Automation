@@ -19,7 +19,7 @@ namespace Dupont_Price_Lists.Services
         // Validate vendor file for required columns
         public void ValidateVendorFile(DataTable vendorTable)
         {
-            string[] requiredColumns = { "Manufact SKU", "Description", "MSRP" };
+            string[] requiredColumns = { "Manufact. SKU", "Description", "MSRP" };
 
             foreach (string col in requiredColumns)
             {

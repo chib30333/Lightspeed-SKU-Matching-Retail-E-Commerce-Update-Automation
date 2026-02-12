@@ -20,7 +20,7 @@ namespace Dupont_Price_Lists.Services.Writing
 
                 var headers = new[]
                 {
-                    "System ID","Manufact SKU","Custom SKU","UPC","Brand","Vendor","Description","Finish","Category",
+                    "System ID","Manufact. SKU","Custom SKU","UPC","Brand","Vendor","Description","Finish","Category",
                     "MSRP","Default Cost","Vendor Cost","Default Price","Retail Price","Contractor Price","Designer Price","Online Price","V.I.P Price",
                     "Archive","Record Type"
                 };
@@ -74,7 +74,7 @@ namespace Dupont_Price_Lists.Services.Writing
 
                 var headers = new[]
                 {
-                    "System ID","Manufact SKU","Variant ID","Brand","Description","Category","Ecom","Online Price",
+                    "System ID","Manufact. SKU","Variant ID","Brand","Description","Category","Ecom","Online Price",
                     "Shipping Weight","Shipping Box Dimensions A","Shipping Box Dimensions B","Shipping Box Dimensions C"
                 };
 

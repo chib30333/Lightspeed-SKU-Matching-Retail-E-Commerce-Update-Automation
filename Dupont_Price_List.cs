@@ -256,14 +256,14 @@ namespace Dupont_Price_Lists
                 FixedVendor = fixedVendor,
 
                 // keep these defaults unless your Lightspeed export uses different column names
-                LightspeedSkuField = "Manufact SKU",
+                LightspeedSkuField = "Manufact. SKU",
                 LightspeedSystemIdField = "System ID",
                 LightspeedCustomSkuField = "Custom SKU",
                 LightspeedUpcField = "UPC",
                 LightspeedMsrpField = "MSRP",
                 LightspeedEcomField = "Ecom",
 
-                OnlineSkuField = "Manufact SKU",
+                OnlineSkuField = "Manufact. SKU",
 
                 NewDescriptionTemplate = "{BRAND} - {DESC} - {FINISH} - {SKU}",
                 CategorySeparator = " > ",
@@ -271,7 +271,7 @@ namespace Dupont_Price_Lists
                 {
                     GetCombo(ComboBoxNewDescription) ?? "Description",
                     GetCombo(ComboBoxNewFinish) ?? "Finish",
-                    GetCombo(ComboBoxNewSKU) ?? "Manufact SKU"
+                    GetCombo(ComboBoxNewSKU) ?? "Manufact. SKU"
                 }.Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
             };
         }
