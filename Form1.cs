@@ -182,22 +182,18 @@ namespace Dupont_Price_Lists
             categoryPath = TextBoxCategoryList.Text;
             masterDiscountPath = TextBoxMasterDiscountList.Text;
 
-            if (String.IsNullOrEmpty(categoryPath) || !File.Exists(categoryPath) || String.IsNullOrEmpty(masterDiscountPath) || !File.Exists(masterDiscountPath)) { 
-                
+            if (String.IsNullOrEmpty(categoryPath) || !File.Exists(categoryPath) || String.IsNullOrEmpty(masterDiscountPath) || !File.Exists(masterDiscountPath)) {
+                MessageBox.Show("Please enter or select a vaild files", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
 
-            if (!String.IsNullOrEmpty(categoryPath)) {
-                if (allPaths["category"].Count == 2)
-                {
-                    categoryPath = allPaths["category"][1];
-                }
-            }
-            if (!String.IsNullOrEmpty(masterDiscountPath))
+            if (allPaths["category"].Count == 2)
             {
-                if (allPaths["masterDiscountList"].Count == 2)
-                {
-                    categoryPath = allPaths["masterDiscountList"][1];
-                }
+                categoryPath = allPaths["category"][1];
+            }
+            if (allPaths["masterDiscountList"].Count == 2)
+            {
+                categoryPath = allPaths["masterDiscountList"][1];
             }
 
 
@@ -213,7 +209,6 @@ namespace Dupont_Price_Lists
                 VendorWeightField = ComboBoxNewWeight.SelectedItem?.ToString() == placeholder ? "" : ComboBoxNewWeight.SelectedItem?.ToString(),
                 VendorDimensionsField = ComboBoxNewDimention.SelectedItem?.ToString() == placeholder ? "" : ComboBoxNewDimention.SelectedItem?.ToString(),
                 VendorBrandField = CheckBoxUseField.Checked ? ComboBoxNewBrand.SelectedItem?.ToString() == placeholder ? "" : ComboBoxNewBrand.SelectedItem?.ToString() : "",
-                LightspeedSkuField = "Manufact SKU"
             };
 
             FormProcess.FormProcess_Load_From_XSLX(
@@ -225,8 +220,8 @@ namespace Dupont_Price_Lists
                 SelectedMapping, 
                 vendorHeaders, 
                 lightspeedHeaders, 
-                brand: brand == null ? "" : brand,
-                vendor: vendor == null ? "" : vendor,
+                brand: brand ?? "",
+                vendor: vendor ?? "",
                 categoryPath, 
                 masterDiscountPath,
                 specify
@@ -237,15 +232,19 @@ namespace Dupont_Price_Lists
         {
             onlinePath = TextBoxOnlineItems.Text;
 
-            if (!String.IsNullOrEmpty(onlinePath))
+            if (!String.IsNullOrEmpty(onlinePath) && File.Exists(onlinePath))
             {
                 if (allPaths["onlineItems"].Count == 2)
                 {
                     categoryPath = allPaths["onlineItems"][1];
                 }
+            } else
+            {
+                MessageBox.Show("Please enter or select a vaild files", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
 
-            var (oh, or) = UnifiedReaderService.ReadAll(onlinePath, 1, "", "");
+                var (oh, or) = UnifiedReaderService.ReadAll(onlinePath, 1, "", "");
             onlineHeaders = oh;
             onlineRows = or;
 
@@ -261,7 +260,6 @@ namespace Dupont_Price_Lists
                 VendorWeightField = ComboBoxNewWeight.SelectedItem?.ToString() == placeholder ? "" : ComboBoxNewWeight.SelectedItem?.ToString(),
                 VendorDimensionsField = ComboBoxNewDimention.SelectedItem?.ToString() == placeholder ? "" : ComboBoxNewDimention.SelectedItem?.ToString(),
                 VendorBrandField = CheckBoxUseField.Checked ? ComboBoxNewBrand.SelectedItem?.ToString() == placeholder ? "" : ComboBoxNewBrand.SelectedItem?.ToString() : "",
-                LightspeedSkuField = "Manufact SKU"
             };
 
             FormProcess.FormProcess_Load_From_XSLX(
@@ -273,8 +271,8 @@ namespace Dupont_Price_Lists
                 SelectedMapping,
                 onlineHeaders,
                 lightspeedHeaders,
-                brand: brand == null ? "" : brand,
-                vendor: vendor == null ? "" : vendor,
+                brand: brand ?? "",
+                vendor: vendor ?? "",
                 categoryPath,
                 masterDiscountPath,
                 specify

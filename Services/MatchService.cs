@@ -72,7 +72,7 @@ namespace Dupont_Price_Lists.Services
             foreach (var vendor in vendorData)
             {
                 vendorCount++;
-                var rawVendor = vendor.GetField(mapping.VendorSkuField);
+                var rawVendor = vendor.GetField(mapping?.VendorSkuField);
                 var key = options.KeyNormalizer(rawVendor);
 
                 if (string.IsNullOrEmpty(key)) continue;

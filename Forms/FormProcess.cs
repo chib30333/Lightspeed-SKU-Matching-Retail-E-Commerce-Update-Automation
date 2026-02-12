@@ -20,8 +20,8 @@ namespace Dupont_Price_Lists.Forms
     public static class FormProcess
     {
         private static MatchResult? matchResult;
-        private static List<ItemRecord>? matchOnlineList;
-        private static string? savePath = "save/";
+        private static readonly List<ItemRecord>? matchOnlineList;
+        private static readonly string? savePath = "save/";
 
         public static async void FormProcess_Load_From_XSLX(
             ProgressBar progress,
@@ -61,7 +61,7 @@ namespace Dupont_Price_Lists.Forms
 
                     var retailOpt = new RetailOption
                     {
-                        VendorSkuField = "Manufact SKU",
+                        VendorSkuField = fieldMapping.LightspeedSkuField,
                         VendorBrandField = "Brand",
                         VendorDescField = "Description",
                         VendorFinishField = "Finish",

@@ -29,6 +29,11 @@ namespace Dupont_Price_Lists.Services
         {
             _separator = separator;
 
+            if(String.IsNullOrEmpty(xlsxPath) || !File.Exists(xlsxPath))
+            {
+
+            }
+
             using var wb = new XLWorkbook(xlsxPath);
             var ws = sheetName is null ? wb.Worksheets.First() : wb.Worksheet(sheetName);
 
