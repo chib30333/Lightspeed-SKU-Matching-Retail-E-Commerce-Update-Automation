@@ -8,16 +8,22 @@ namespace Dupont_Price_Lists.Services.Discounts
     {
         public static DiscountRule? Select(
             IEnumerable<DiscountRule> rules,
-            string brandKey,
+            IEnumerable<string> lookupKeys,
             string sku,
             string customSku,
             string haystackLower)
         {
-            var brandRules = rules.Where(r => r.BrandKey.Equals(brandKey, StringComparison.OrdinalIgnoreCase)).ToList();
-            if (brandRules.Count == 0) return null;
+            var keySet = new HashSet<string>(lookupKeys.Where(k => !string.IsNullOrWhiteSpace(k)),
+                StringComparer.OrdinalIgnoreCase);
 
-            // Apply optional filters first (TagContains and SkuStartsWith)
-            var filtered = brandRules.Where(r =>
+            if (keySet.Count == 0) return null;
+
+            // match any rule whose Keys intersects keySet
+            var candidates = rules.Where(r => r.Keys.Any(k => keySet.Contains(k))).ToList();
+            if (candidates.Count == 0) return null;
+
+            // filter by TagContains / SkuStartsWith if provided
+            var filtered = candidates.Where(r =>
             {
                 bool tagOk = string.IsNullOrWhiteSpace(r.TagContains)
                     || haystackLower.Contains(r.TagContains.Trim().ToLowerInvariant())
@@ -29,11 +35,7 @@ namespace Dupont_Price_Lists.Services.Discounts
                 return tagOk && skuOk;
             }).ToList();
 
-            // If any filtered rules exist, take first (you can later add priority column)
-            if (filtered.Count > 0) return filtered[0];
-
-            // fallback to brand-only rule (first)
-            return brandRules[0];
+            return filtered.Count > 0 ? filtered[0] : candidates[0];
         }
     }
 }

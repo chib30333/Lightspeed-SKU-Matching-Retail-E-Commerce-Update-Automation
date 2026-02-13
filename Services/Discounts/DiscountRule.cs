@@ -2,7 +2,8 @@
 {
     public sealed class DiscountRule
     {
-        public string BrandKey { get; set; } = "";
+        // All keys that can identify this rule row (e.g., Brand, Vendor, Lyncar)
+        public List<string> Keys { get; set; } = new();
 
         public string? TagContains { get; set; }
         public string? SkuStartsWith { get; set; }

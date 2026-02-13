@@ -15,6 +15,7 @@ namespace Dupont_Price_Lists.Models
         public string? VendorWeightField { get; set; }
         public string? VendorDimensionsField { get; set; }
         public string? VendorBrandField { get; set; }
+        public string? VendorVendorField { get; set; }
 
         // Lightspeed file (File A)
         public string LightspeedSkuField { get; set; } = "Manufact. SKU";

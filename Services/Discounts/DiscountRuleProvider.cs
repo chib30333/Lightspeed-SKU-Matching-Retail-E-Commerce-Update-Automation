@@ -15,51 +15,69 @@ namespace Dupont_Price_Lists.Services.Discounts
             _norm = normalizer;
         }
 
-        public List<DiscountRule> Load(string xlsxPath, string? sheetName = null)
+        public List<DiscountRule> Load(
+            string xlsxPath,
+            string? sheetName = null,
+            IEnumerable<string>? keyColumns = null)
         {
-            if (string.IsNullOrWhiteSpace(xlsxPath))
-                throw new ArgumentException("Discount sheet missing path.");
+            keyColumns ??= new[] { "Brand", "vendor", "lyncar" }; // fallback order
 
             using var wb = new XLWorkbook(xlsxPath);
             var ws = sheetName is null ? wb.Worksheets.First() : wb.Worksheet(sheetName);
 
             var headerRow = ws.FirstRowUsed() ?? throw new InvalidOperationException("Empty discount sheet.");
-            var headers = headerRow.CellsUsed()
-                .Select(c => c.GetString().Trim())
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(h => h, h => headerRow.CellsUsed().First(c => c.GetString().Trim().Equals(h, StringComparison.OrdinalIgnoreCase)).Address.ColumnNumber,
-                    StringComparer.OrdinalIgnoreCase);
+            var headerCells = headerRow.CellsUsed().ToList();
 
-            string GetCell(int r, string col)
-                => headers.TryGetValue(col, out var c) ? ws.Cell(r, c).GetString().Trim() : "";
+            // header map: name -> column number
+            var headers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (var cell in headerCells)
+            {
+                var name = cell.GetString().Trim();
+                if (string.IsNullOrWhiteSpace(name)) continue;
+                if (!headers.ContainsKey(name))
+                    headers[name] = cell.Address.ColumnNumber;
+            }
+
+            string GetCell(int r, string colName)
+            {
+                return headers.TryGetValue(colName, out var c)
+                    ? ws.Cell(r, c).GetString().Trim()
+                    : "";
+            }
 
             int lastRow = ws.LastRowUsed().RowNumber();
-
             var rules = new List<DiscountRule>();
 
             for (int r = headerRow.RowBelow().RowNumber(); r <= lastRow; r++)
             {
-                var brand = GetCell(r, "Brand");
-                var brandKey = _norm(brand) ?? "";
+                // Build all possible keys for this row
+                var keys = new List<string>();
+                foreach (var col in keyColumns)
+                {
+                    var raw = GetCell(r, col);
+                    var k = _norm(raw);
+                    if (!string.IsNullOrWhiteSpace(k) && !keys.Contains(k, StringComparer.OrdinalIgnoreCase))
+                        keys.Add(k);
+                }
 
-                if (string.IsNullOrWhiteSpace(brandKey))
+                // If none of Brand/vendor/lyncar exists, skip row
+                if (keys.Count == 0)
                     continue;
 
                 var rule = new DiscountRule
                 {
-                    BrandKey = brandKey,
+                    Keys = keys,
                     TagContains = headers.ContainsKey("TagContains") ? GetCell(r, "TagContains") : null,
                     SkuStartsWith = headers.ContainsKey("SkuStartsWith") ? GetCell(r, "SkuStartsWith") : null,
 
-                    DefaultCostRule = TryGetAny(GetCell, r, "Default Cost", "DefaultCost"),
-                    VendorCostRule = TryGetAny(GetCell, r, "Vendor Cost", "VendorCost"),
+                    DefaultCostRule = TryGetAny(GetCell, r, "Default Cost - % Off", "Default Cost", "DefaultCost"),
+                    VendorCostRule = TryGetAny(GetCell, r, "Vendor Cost - % Off", "Vendor Cost", "VendorCost"),
                     DefaultPriceRule = TryGetAny(GetCell, r, "Default Price", "DefaultPrice"),
-                    RetailPriceRule = TryGetAny(GetCell, r, "Retail Price", "RetailPrice"),
-                    ContractorPriceRule = TryGetAny(GetCell, r, "Contractor Price", "ContractorPrice"),
-                    DesignerPriceRule = TryGetAny(GetCell, r, "Designer Price", "DesignerPrice"),
-                    OnlinePriceRule = TryGetAny(GetCell, r, "Online Price", "OnlinePrice"),
-                    VipPriceRule = TryGetAny(GetCell, r, "V.I.P Price", "VIP Price", "VipPrice", "V.I.P", "VIP"),
+                    RetailPriceRule = TryGetAny(GetCell, r, "Retail/Contractor - % Off", "Retail Price", "RetailPrice"),
+                    ContractorPriceRule = TryGetAny(GetCell, r, "Contractor - % Off", "Contractor Price", "ContractorPrice"),
+                    DesignerPriceRule = TryGetAny(GetCell, r, "Designer - % Off", "Designer Price", "DesignerPrice"),
+                    OnlinePriceRule = TryGetAny(GetCell, r, "Online - % Off", "Online Price", "OnlinePrice"),
+                    VipPriceRule = TryGetAny(GetCell, r, "V.I.P. - % Off", "V.I.P Price", "VIP Price", "VipPrice")
                 };
 
                 rules.Add(rule);

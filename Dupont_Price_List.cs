@@ -246,6 +246,7 @@ namespace Dupont_Price_Lists
                 VendorPriceField = SelectedMappingOrNull(ComboBoxNewListPrice),
                 VendorWeightField = SelectedMappingOrNull(ComboBoxNewWeight),
                 VendorDimensionsField = SelectedMappingOrNull(ComboBoxNewDimention),
+                VendorVendorField = "Vendor",
 
                 UseBrandFromField = CheckBoxUseField.Checked,
                 VendorBrandField = CheckBoxUseField.Checked ? SelectedMappingOrNull(ComboBoxNewBrand) : null,

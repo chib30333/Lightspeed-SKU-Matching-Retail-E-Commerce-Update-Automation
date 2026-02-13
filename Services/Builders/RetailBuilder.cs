@@ -25,35 +25,64 @@ namespace Dupont_Price_Lists.Services.Builders
                 var vendor = m.VendorItem;
                 var ls = m.LightspeedItem;
 
-                string GetVendor(ItemRecord r, string? field)
+                string GetFieldSafe(ItemRecord r, string? field)
                     => string.IsNullOrWhiteSpace(field) ? "" : r.GetField(field);
 
-                var sku = GetVendor(vendor, profile.VendorSkuField);
+                var sku = GetFieldSafe(vendor, profile.VendorSkuField);
                 if (string.IsNullOrWhiteSpace(sku)) continue;
 
                 var brand = ResolveBrand(profile, vendor, ls);
-                var vendorName = profile.UseFixedVendor ? profile.FixedVendor : null;
-                var customSku = ls?.GetField(profile.LightspeedCustomSkuField) ?? "";
-                var upc = ls?.GetField(profile.LightspeedUpcField) ?? vendor.GetField(profile.VendorUpcField ?? "");
 
-                var finish = GetVendor(vendor, profile.VendorFinishField);
-                var desc = GetVendor(vendor, profile.VendorDescriptionField);
+                // IMPORTANT: vendorName should come from FixedVendor if set, otherwise from Lightspeed "Vendor" (or whatever field you have)
+                // NOTE: profile.VendorVendorField must exist in your profile, or replace with a fixed LS field like "Vendor"
+                var vendorName = profile.UseFixedVendor
+                    ? (profile.FixedVendor ?? "")
+                    : GetFieldSafe(ls ?? new ItemRecord(), profile.VendorVendorField); // if ls null => ""
+
+                var customSku = ls?.GetField(profile.LightspeedCustomSkuField) ?? "";
+                var upc = ls?.GetField(profile.LightspeedUpcField) ?? GetFieldSafe(vendor, profile.VendorUpcField);
+
+                var finish = GetFieldSafe(vendor, profile.VendorFinishField);
+                var desc = GetFieldSafe(vendor, profile.VendorDescriptionField);
 
                 var msrp = ResolveMsrp(vendor, ls, profile);
 
                 var finalDesc = BuildDescription(profile.NewDescriptionTemplate, brand, desc, finish, sku);
                 finalDesc = EnsureBrandDash(brand, finalDesc);
 
-                if (m.RecordType == "Found" && ls != null) finalDesc = desc;
+                if (m.RecordType == "Found" && !string.IsNullOrWhiteSpace(desc))
+                    finalDesc = desc;
 
                 // Category resolution: scan configured fields
-                var scanFields = profile.CategoryScanFields?.Count > 0 ? profile.CategoryScanFields : new List<string> { profile.VendorDescriptionField ?? "DESCRIPTION" };
+                var scanFields = (profile.CategoryScanFields != null && profile.CategoryScanFields.Count > 0)
+                    ? profile.CategoryScanFields
+                    : new List<string> { profile.VendorDescriptionField ?? "Description" };
+
                 var cat = categoryEngine.Resolve(vendor, scanFields) ?? "";
 
-                var brandKey = Services.Matching.MatchRetailOptions.DefaultNormalizer(brand) ?? "";
-                var hay = $"{desc} {finish} {sku} {brand} {customSku}".ToLowerInvariant();
+                // -----------------------------
+                // DISCOUNT LOOKUP KEYS (Brand + Vendor)
+                // -----------------------------
+                var keys = new List<string>();
 
-                var rule = DiscountRuleSelector.Select(discountRules, brandKey, sku, customSku, hay);
+                var brandKey = Services.Matching.MatchRetailOptions.DefaultNormalizer(brand);
+                if (!string.IsNullOrWhiteSpace(brandKey))
+                    keys.Add(brandKey);
+
+                var vendorKey = Services.Matching.MatchRetailOptions.DefaultNormalizer(vendorName);
+                if (!string.IsNullOrWhiteSpace(vendorKey) && !keys.Contains(vendorKey, StringComparer.OrdinalIgnoreCase))
+                    keys.Add(vendorKey);
+
+                // extra context for TagContains matching
+                var hay = $"{desc} {finish} {sku} {brand} {vendorName} {customSku}".ToLowerInvariant();
+
+                var rule = DiscountRuleSelector.Select(
+                    discountRules,
+                    lookupKeys: keys,
+                    sku: sku,
+                    customSku: customSku,
+                    haystackLower: hay
+                );
 
                 var rr = new RetailRow
                 {
@@ -73,7 +102,6 @@ namespace Dupont_Price_Lists.Services.Builders
                     Msrp = msrp
                 };
 
-                // Apply rules (no hardcoding)
                 rr.DefaultCost = DiscountEngine.Apply(msrp, rule?.DefaultCostRule);
                 rr.VendorCost = DiscountEngine.Apply(msrp, rule?.VendorCostRule);
                 rr.DefaultPrice = DiscountEngine.Apply(msrp, rule?.DefaultPriceRule);
