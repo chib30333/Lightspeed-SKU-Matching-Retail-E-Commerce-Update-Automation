@@ -1,4 +1,5 @@
 ﻿using Dupont_Price_Lists.Models;
+using Dupont_Price_Lists.Models.Matching;
 using Dupont_Price_Lists.Services.Builders;
 using Dupont_Price_Lists.Services.Categories;
 using Dupont_Price_Lists.Services.Discounts;
@@ -15,7 +16,7 @@ namespace Dupont_Price_Lists.Services.Pipeline
     {
         private readonly RetailBuilder _retailBuilder = new();
         private readonly OnlineBuilder _onlineBuilder = new();
-        private readonly ExcelWriter2 _writer = new();
+        private readonly ExcelWriter _writer = new();
 
         public async Task<RetailBuildResult> BuildRetailAsync(
             string vendorPath,
@@ -53,7 +54,8 @@ namespace Dupont_Price_Lists.Services.Pipeline
                 NewItems = match.NewItems.Count,
                 VendorDuplicateKeys = match.VendorDuplicates.Count,
                 LightspeedDuplicateKeys = match.LightspeedDuplicates.Count,
-                Warnings = warnings
+                Warnings = warnings,
+                Match = match,
             };
         }
 
@@ -86,5 +88,14 @@ namespace Dupont_Price_Lists.Services.Pipeline
 
         public Task WriteOnlineAsync(string outputPath, List<Models.Outputs.OnlineRow> rows, CancellationToken ct = default)
             => _writer.WriteOnlineAsync(outputPath, rows, ct);
+
+        public Task WriteFoundAsync(string outputPath, List<FoundMatch> rows, List<string> vendorHeaders, CancellationToken ct = default)
+            => _writer.WriteFoundAsync(outputPath, rows, vendorHeaders, ct);
+
+        public Task WriteNewAsync(string outputPath, List<ItemRecord> rows, List<string> vendorHeaders, CancellationToken ct = default)
+            => _writer.WriteNewAsync(outputPath, rows, vendorHeaders, ct);
+
+        public Task WriteReportAsync(string outputPath, MatchResult m_result, CancellationToken ct = default)
+            => _writer.WriteReportAsync(outputPath, m_result, ct);
     }
 }

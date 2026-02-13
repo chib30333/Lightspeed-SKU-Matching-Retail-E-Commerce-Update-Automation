@@ -163,14 +163,22 @@ namespace Dupont_Price_Lists
                     MessageBox.Show(string.Join("\n", result.Warnings), "Warnings");
 
                 Directory.CreateDirectory("save");
-                var outputPath = Path.Combine("save", "Retail.xlsx");
-                await _pipe.WriteRetailAsync(outputPath, result.Rows);
+
+                var outputRetailPath = Path.Combine("save", "Retail.xlsx");
+                var outputFoundPath = Path.Combine("save", "Found.xlsx");
+                var outputNewPath = Path.Combine("save", "New.xlsx");
+                var outputReportPath = Path.Combine("save", "Report.xlsx");
+
+                await _pipe.WriteRetailAsync(outputRetailPath, result.Rows);
+                await _pipe.WriteFoundAsync(outputFoundPath, result.Match.Found, vendorHeaders);
+                await _pipe.WriteNewAsync(outputNewPath, result.Match.NewItems, vendorHeaders);
+                await _pipe.WriteReportAsync(outputReportPath, result.Match);
 
                 ProgressBarUpdate.Style = ProgressBarStyle.Continuous;
                 ProgressBarUpdate.Value = 100;
                 TextStatus.Text = $"Done. Found={result.Found}, New={result.NewItems}, Out={result.Rows.Count}";
 
-                MessageBox.Show($"Exported:\n{outputPath}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Exported:\n{outputRetailPath}\n{outputFoundPath}\n{outputNewPath}\n{outputReportPath}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {

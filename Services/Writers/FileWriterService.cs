@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using ClosedXML.Excel;
+using Dupont_Price_Lists.Models;
+using Dupont_Price_Lists.Models.Matching;
+using Dupont_Price_Lists.Models.Outputs;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using ClosedXML.Excel;
-using Dupont_Price_Lists.Models.Outputs;
 
 namespace Dupont_Price_Lists.Services.Writing
 {
-    public sealed class ExcelWriter2
+    public sealed class ExcelWriter
     {
         public Task WriteRetailAsync(string path, List<RetailRow> rows, CancellationToken ct = default)
         {
@@ -105,6 +107,78 @@ namespace Dupont_Price_Lists.Services.Writing
 
                 ws.Columns().AdjustToContents();
                 wb.SaveAs(path);
+            }, ct);
+        }
+
+        public Task WriteFoundAsync(string filePath, List<FoundMatch> foundMatches, List<string> vendorHeaders, CancellationToken ct = default)
+        {
+            return Task.Run(() =>
+            {
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("Found");
+
+                var headers = vendorHeaders.ToList();
+
+                for (int i = 0; i < headers.Count; i++)
+                    ws.Cell(1, i + 1).Value = headers[i];
+
+                int row = 2;
+                foreach (var fm in foundMatches)
+                {
+                    for (int c = 0; c < vendorHeaders.Count; c++)
+                        ws.Cell(row, c + 1).Value = fm.Vendor.GetField(vendorHeaders[c]) ?? "";
+                    row++;
+                }
+
+                ws.Columns().AdjustToContents();
+                wb.SaveAs(filePath);
+            }, ct);
+        }
+
+        public Task WriteNewAsync(string filePath, List<ItemRecord> newItems, List<string> vendorHeaders, CancellationToken ct = default)
+        {
+            return Task.Run(() =>
+            {
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("New");
+
+                for (int i = 0; i < vendorHeaders.Count; i++)
+                    ws.Cell(1, i + 1).Value = vendorHeaders[i];
+
+                int row = 2;
+                foreach (var item in newItems)
+                {
+                    for (int c = 0; c < vendorHeaders.Count; c++)
+                        ws.Cell(row, c + 1).Value = item.GetField(vendorHeaders[c]) ?? "";
+                    row++;
+                }
+
+                ws.Columns().AdjustToContents();
+                wb.SaveAs(filePath);
+            }, ct);
+        }
+
+        public Task WriteReportAsync(string filePath, MatchResult result, CancellationToken ct = default)
+        {
+            return Task.Run(() =>
+            {
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("Report");
+                ws.Cell(1, 1).Value = "Total Vendor Rows";
+                ws.Cell(1, 2).Value = result.TotalVendorRows;
+                ws.Cell(2, 1).Value = "Total Lightspeed Rows";
+                ws.Cell(2, 2).Value = result.TotalLightspeedRows;
+                ws.Cell(3, 1).Value = "Found";
+                ws.Cell(3, 2).Value = result.Found.Count;
+                ws.Cell(4, 1).Value = "New";
+                ws.Cell(4, 2).Value = result.NewItems.Count;
+                ws.Cell(6, 1).Value = "Vendor Duplicates Count";
+                ws.Cell(6, 2).Value = result.VendorDuplicates.Count;
+                ws.Cell(7, 1).Value = "Lightspeed Duplicates Count";
+                ws.Cell(7, 2).Value = result.LightspeedDuplicates.Count;
+
+                ws.Columns().AdjustToContents();
+                wb.SaveAs(filePath);
             }, ct);
         }
     }
