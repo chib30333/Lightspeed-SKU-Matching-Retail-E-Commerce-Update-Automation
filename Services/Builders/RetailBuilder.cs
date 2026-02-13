@@ -33,11 +33,9 @@ namespace Dupont_Price_Lists.Services.Builders
 
                 var brand = ResolveBrand(profile, vendor, ls);
 
-                // IMPORTANT: vendorName should come from FixedVendor if set, otherwise from Lightspeed "Vendor" (or whatever field you have)
-                // NOTE: profile.VendorVendorField must exist in your profile, or replace with a fixed LS field like "Vendor"
                 var vendorName = profile.UseFixedVendor
                     ? (profile.FixedVendor ?? "")
-                    : GetFieldSafe(ls ?? new ItemRecord(), profile.VendorVendorField); // if ls null => ""
+                    : GetFieldSafe(ls ?? new ItemRecord(), profile.VendorVendorField);
 
                 var customSku = ls?.GetField(profile.LightspeedCustomSkuField) ?? "";
                 var upc = ls?.GetField(profile.LightspeedUpcField) ?? GetFieldSafe(vendor, profile.VendorUpcField);
@@ -53,7 +51,6 @@ namespace Dupont_Price_Lists.Services.Builders
                 if (m.RecordType == "Found" && !string.IsNullOrWhiteSpace(desc))
                     finalDesc = desc;
 
-                // Category resolution: scan configured fields
                 var scanFields = (profile.CategoryScanFields != null && profile.CategoryScanFields.Count > 0)
                     ? profile.CategoryScanFields
                     : new List<string> { profile.VendorDescriptionField ?? "Description" };
@@ -73,7 +70,6 @@ namespace Dupont_Price_Lists.Services.Builders
                 if (!string.IsNullOrWhiteSpace(vendorKey) && !keys.Contains(vendorKey, StringComparer.OrdinalIgnoreCase))
                     keys.Add(vendorKey);
 
-                // extra context for TagContains matching
                 var hay = $"{desc} {finish} {sku} {brand} {vendorName} {customSku}".ToLowerInvariant();
 
                 var rule = DiscountRuleSelector.Select(
@@ -130,14 +126,12 @@ namespace Dupont_Price_Lists.Services.Builders
                 if (!string.IsNullOrWhiteSpace(b)) return b;
             }
 
-            // fallback to lightspeed if it has Brand column
             var lsBrand = ls?.GetField("Brand");
             return string.IsNullOrWhiteSpace(lsBrand) ? "" : lsBrand;
         }
 
         private static decimal ResolveMsrp(ItemRecord vendor, ItemRecord? ls, MappingProfile profile)
         {
-            // Prefer vendor "price" or "msrp" column if mapped, else LS MSRP
             if (!string.IsNullOrWhiteSpace(profile.VendorPriceField))
             {
                 var v = vendor.GetField(profile.VendorPriceField);
@@ -145,7 +139,6 @@ namespace Dupont_Price_Lists.Services.Builders
                 if (d > 0m) return d;
             }
 
-            // fallback to LS MSRP
             if (ls != null)
             {
                 var d = PriceMath.ParseDecimal(ls.GetField(profile.LightspeedMsrpField));
@@ -190,7 +183,6 @@ namespace Dupont_Price_Lists.Services.Builders
 
                 var ordered = list.OrderByDescending(x => x.Msrp).ToList();
 
-                // keep highest MSRP as active
                 bool first = true;
                 foreach (var x in ordered)
                 {

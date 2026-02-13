@@ -75,7 +75,6 @@ namespace Dupont_Price_Lists.Services.Categories
                 }
             }
 
-            // IMPORTANT: return FullPath, not token
             return best?.FullPath;
         }
 
@@ -118,7 +117,6 @@ namespace Dupont_Price_Lists.Services.Categories
                 var raw = ws.Cell(r, 1).GetString().Trim();
                 if (string.IsNullOrEmpty(raw)) continue;
 
-                // supports "--" indentation format
                 var level = raw.Split(new[] { "--" }, StringSplitOptions.None).Length;
                 var name = raw.Replace("-", "").Replace(">", "").Trim();
 

@@ -20,7 +20,7 @@ namespace Dupont_Price_Lists.Services.Discounts
             string? sheetName = null,
             IEnumerable<string>? keyColumns = null)
         {
-            keyColumns ??= new[] { "Brand", "vendor", "lyncar" }; // fallback order
+            keyColumns ??= new[] { "Brand", "vendor", "lyncar" };
 
             using var wb = new XLWorkbook(xlsxPath);
             var ws = sheetName is null ? wb.Worksheets.First() : wb.Worksheet(sheetName);
@@ -28,7 +28,6 @@ namespace Dupont_Price_Lists.Services.Discounts
             var headerRow = ws.FirstRowUsed() ?? throw new InvalidOperationException("Empty discount sheet.");
             var headerCells = headerRow.CellsUsed().ToList();
 
-            // header map: name -> column number
             var headers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             foreach (var cell in headerCells)
             {
@@ -50,7 +49,6 @@ namespace Dupont_Price_Lists.Services.Discounts
 
             for (int r = headerRow.RowBelow().RowNumber(); r <= lastRow; r++)
             {
-                // Build all possible keys for this row
                 var keys = new List<string>();
                 foreach (var col in keyColumns)
                 {
@@ -60,7 +58,6 @@ namespace Dupont_Price_Lists.Services.Discounts
                         keys.Add(k);
                 }
 
-                // If none of Brand/vendor/lyncar exists, skip row
                 if (keys.Count == 0)
                     continue;
 

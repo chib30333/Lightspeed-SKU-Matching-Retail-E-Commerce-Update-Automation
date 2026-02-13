@@ -77,7 +77,7 @@ namespace Dupont_Price_Lists.Services.Pipeline
             var outRows = _onlineBuilder.Build(match, onlineRows, profile, rules);
 
             var warnings = new List<string>();
-            // optional validations
+
             return new OnlineBuildResult { Rows = outRows, Warnings = warnings };
         }
 

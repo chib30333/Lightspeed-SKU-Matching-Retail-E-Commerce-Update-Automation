@@ -37,7 +37,6 @@ namespace Dupont_Price_Lists.Services.Matching
                 options ??= new MatchRetailOptions();
                 var result = new MatchResult();
 
-                // Index Lightspeed by normalized SKU
                 var lsIndex = new Dictionary<string, List<ItemRecord>>(StringComparer.OrdinalIgnoreCase);
                 int lsCount = 0;
 
@@ -62,7 +61,6 @@ namespace Dupont_Price_Lists.Services.Matching
                             result.LightspeedDuplicates[kv.Key] = new List<ItemRecord>(kv.Value);
                 }
 
-                // Walk Vendor rows
                 var seenVendor = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 int vendorCount = 0;
 

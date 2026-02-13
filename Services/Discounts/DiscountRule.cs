@@ -2,7 +2,6 @@
 {
     public sealed class DiscountRule
     {
-        // All keys that can identify this rule row (e.g., Brand, Vendor, Lyncar)
         public List<string> Keys { get; set; } = new();
 
         public string? TagContains { get; set; }

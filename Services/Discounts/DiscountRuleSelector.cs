@@ -18,11 +18,9 @@ namespace Dupont_Price_Lists.Services.Discounts
 
             if (keySet.Count == 0) return null;
 
-            // match any rule whose Keys intersects keySet
             var candidates = rules.Where(r => r.Keys.Any(k => keySet.Contains(k))).ToList();
             if (candidates.Count == 0) return null;
 
-            // filter by TagContains / SkuStartsWith if provided
             var filtered = candidates.Where(r =>
             {
                 bool tagOk = string.IsNullOrWhiteSpace(r.TagContains)

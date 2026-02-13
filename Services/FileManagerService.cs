@@ -21,7 +21,6 @@ namespace Dupont_Price_Lists.Services
 
             paths.Add(openFileDialog.FileName);
 
-            // If CSV, also convert to XLSX
             if (Path.GetExtension(openFileDialog.FileName).ToLowerInvariant() == ".csv")
             {
                 Directory.CreateDirectory("temp");

@@ -9,14 +9,12 @@ namespace Dupont_Price_Lists.Services
 {
     public class FileValidator
     {
-        // Check if required column exists in table
         public bool HasColumn(DataTable table, string columnName)
         {
             return table.Columns.Contains(columnName);
         }
 
 
-        // Validate vendor file for required columns
         public void ValidateVendorFile(DataTable vendorTable)
         {
             string[] requiredColumns = { "Manufact. SKU", "Description", "MSRP" };
@@ -31,7 +29,6 @@ namespace Dupont_Price_Lists.Services
                 throw new Exception("❌ The vendor file is empty!");
         }
 
-        // Validate discount file
         public void ValidateDiscountFile(DataTable discountTable)
         {
             if (!HasColumn(discountTable, "Brand") || !HasColumn(discountTable, "Discount"))

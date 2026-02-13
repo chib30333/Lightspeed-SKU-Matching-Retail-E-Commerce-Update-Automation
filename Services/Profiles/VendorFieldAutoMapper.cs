@@ -15,7 +15,6 @@ namespace Dupont_Price_Lists.Services.Profiles
                 if (hit != null) return hit;
             }
 
-            // also support contains matches (ex: "New List Price USD")
             foreach (var c in candidates)
             {
                 var hit = list.FirstOrDefault(h => h.IndexOf(c, StringComparison.OrdinalIgnoreCase) >= 0);
