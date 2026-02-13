@@ -43,7 +43,7 @@ namespace Dupont_Price_Lists.Services.Builders
                 var upc = ls?.GetField(profile.LightspeedUpcField) ?? GetFieldSafe(vendor, profile.VendorUpcField);
 
                 var finish = GetFieldSafe(vendor, profile.VendorFinishField);
-                var desc = GetFieldSafe(vendor, profile.VendorDescriptionField);
+                var desc = GetFieldSafe(ls ?? new ItemRecord(), profile.VendorDescriptionField ?? "Item") ?? GetFieldSafe(vendor, profile.VendorDescriptionField);
 
                 var msrp = ResolveMsrp(vendor, ls, profile);
 
