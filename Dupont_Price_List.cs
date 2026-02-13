@@ -227,53 +227,38 @@ namespace Dupont_Price_Lists
             ComboBoxNewBrand.Enabled = CheckBoxUseField.Checked;
         }
 
+        private static string? SelectedMappingOrNull(ComboBox cb)
+        {
+            var placeholder = "----- Select -----";
+            var val = cb.SelectedItem?.ToString();
+            if (string.IsNullOrWhiteSpace(val) || val == placeholder) return null;
+            return val;
+        }
+
         private MappingProfile BuildProfileFromUi()
         {
-            string placeholder = "----- Select -----";
-
-            string? GetCombo(ComboBox cb)
-                => cb.SelectedItem?.ToString() == placeholder ? "" : cb.SelectedItem?.ToString();
-
-            var fixedBrand = ComboBoxBrand?.SelectedIndex <= 0 ? "" : ComboBoxBrand?.SelectedItem?.ToString();
-            var fixedVendor = ComboBoxVendor?.SelectedIndex <= 0 ? "" : ComboBoxVendor?.SelectedItem?.ToString();
-
-            return new MappingProfile
+            var profile = new MappingProfile
             {
-                VendorSkuField = GetCombo(ComboBoxNewSKU) ?? "",
-                VendorUpcField = GetCombo(ComboBoxNewUPC),
-                VendorPriceField = GetCombo(ComboBoxNewListPrice),
-                VendorDescriptionField = GetCombo(ComboBoxNewDescription),
-                VendorFinishField = GetCombo(ComboBoxNewFinish),
-                VendorWeightField = GetCombo(ComboBoxNewWeight),
-                VendorDimensionsField = GetCombo(ComboBoxNewDimention),
+                VendorSkuField = SelectedMappingOrNull(ComboBoxNewSKU) ?? "",
+                VendorDescriptionField = SelectedMappingOrNull(ComboBoxNewDescription),
+                VendorFinishField = SelectedMappingOrNull(ComboBoxNewFinish),
+                VendorUpcField = SelectedMappingOrNull(ComboBoxNewUPC),
+                VendorPriceField = SelectedMappingOrNull(ComboBoxNewListPrice),
+                VendorWeightField = SelectedMappingOrNull(ComboBoxNewWeight),
+                VendorDimensionsField = SelectedMappingOrNull(ComboBoxNewDimention),
 
-                UseFixedBrand = !string.IsNullOrWhiteSpace(fixedBrand),
-                FixedBrand = fixedBrand,
                 UseBrandFromField = CheckBoxUseField.Checked,
-                VendorBrandField = CheckBoxUseField.Checked ? GetCombo(ComboBoxNewBrand) : null,
+                VendorBrandField = CheckBoxUseField.Checked ? SelectedMappingOrNull(ComboBoxNewBrand) : null,
 
-                UseFixedVendor = !string.IsNullOrWhiteSpace(fixedVendor),
-                FixedVendor = fixedVendor,
+                // fixed brand/vendor dropdowns
+                UseFixedBrand = ComboBoxBrand?.SelectedIndex > 0,
+                FixedBrand = ComboBoxBrand?.SelectedIndex > 0 ? ComboBoxBrand.SelectedItem?.ToString() : null,
 
-                // keep these defaults unless your Lightspeed export uses different column names
-                LightspeedSkuField = "Manufact. SKU",
-                LightspeedSystemIdField = "System ID",
-                LightspeedCustomSkuField = "Custom SKU",
-                LightspeedUpcField = "UPC",
-                LightspeedMsrpField = "MSRP",
-                LightspeedEcomField = "Ecom",
-
-                OnlineSkuField = "Manufact. SKU",
-
-                NewDescriptionTemplate = "{BRAND} - {DESC} - {FINISH} - {SKU}",
-                CategorySeparator = " > ",
-                CategoryScanFields = new List<string>
-                {
-                    GetCombo(ComboBoxNewDescription) ?? "Description",
-                    GetCombo(ComboBoxNewFinish) ?? "Finish",
-                    GetCombo(ComboBoxNewSKU) ?? "Manufact. SKU"
-                }.Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
+                UseFixedVendor = ComboBoxVendor?.SelectedIndex > 0,
+                FixedVendor = ComboBoxVendor?.SelectedIndex > 0 ? ComboBoxVendor.SelectedItem?.ToString() : null,
             };
+
+            return profile;
         }
 
         private string ResolveEffectivePath(string key, string fallbackTextBoxPath)

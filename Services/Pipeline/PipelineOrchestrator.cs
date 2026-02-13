@@ -1,19 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Dupont_Price_Lists.Models;
+﻿using Dupont_Price_Lists.Models;
 using Dupont_Price_Lists.Services.Builders;
 using Dupont_Price_Lists.Services.Categories;
 using Dupont_Price_Lists.Services.Discounts;
 using Dupont_Price_Lists.Services.Matching;
+using Dupont_Price_Lists.Services.Profiles;
 using Dupont_Price_Lists.Services.Writing;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Dupont_Price_Lists.Services.Pipeline
 {
     public sealed class PipelineOrchestrator
     {
-        private readonly RetailBuilder2 _retailBuilder = new();
-        private readonly OnlineBuilder2 _onlineBuilder = new();
+        private readonly RetailBuilder _retailBuilder = new();
+        private readonly OnlineBuilder _onlineBuilder = new();
         private readonly ExcelWriter2 _writer = new();
 
         public async Task<RetailBuildResult> BuildRetailAsync(
@@ -24,8 +25,13 @@ namespace Dupont_Price_Lists.Services.Pipeline
             MappingProfile profile,
             CancellationToken ct = default)
         {
-            var (_, vendorRows) = UnifiedReaderService.ReadAll(vendorPath, 1);
-            var (_, lightspeedRows) = UnifiedReaderService.ReadAll(lightspeedPath, 1);
+            var (vendorHeaders, vendorRows) = UnifiedReaderService.ReadAll(vendorPath, 1);
+            var (lsHeaders, lightspeedRows) = UnifiedReaderService.ReadAll(lightspeedPath, 1);
+
+            profile.VendorDescriptionField ??= VendorFieldAutoMapper.GuessField(vendorHeaders, "Description", "Item Description", "Desc");
+            profile.VendorFinishField ??= VendorFieldAutoMapper.GuessField(vendorHeaders, "Finish", "Color", "Finish Name");
+            profile.VendorPriceField ??= VendorFieldAutoMapper.GuessField(vendorHeaders, "MSRP", "List Price", "New List Price", "Price");
+            profile.VendorUpcField ??= VendorFieldAutoMapper.GuessField(vendorHeaders, "UPC", "Upc", "Barcode");
 
             var match = await MatchRetailService.MatchItemsAsync(vendorRows, lightspeedRows, profile, ct: ct);
 

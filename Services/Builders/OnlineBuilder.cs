@@ -10,7 +10,7 @@ using Dupont_Price_Lists.Services.Matching;
 
 namespace Dupont_Price_Lists.Services.Builders
 {
-    public sealed class OnlineBuilder2
+    public sealed class OnlineBuilder
     {
         public List<OnlineRow> Build(
             MatchResult match,

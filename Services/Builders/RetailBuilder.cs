@@ -10,7 +10,7 @@ using Dupont_Price_Lists.Services.Pricing;
 
 namespace Dupont_Price_Lists.Services.Builders
 {
-    public sealed class RetailBuilder2
+    public sealed class RetailBuilder
     {
         public List<RetailRow> Build(
             MatchResult match,
@@ -25,7 +25,10 @@ namespace Dupont_Price_Lists.Services.Builders
                 var vendor = m.VendorItem;
                 var ls = m.LightspeedItem;
 
-                var sku = vendor.GetField(profile.VendorSkuField);
+                string GetVendor(ItemRecord r, string? field)
+                    => string.IsNullOrWhiteSpace(field) ? "" : r.GetField(field);
+
+                var sku = GetVendor(vendor, profile.VendorSkuField);
                 if (string.IsNullOrWhiteSpace(sku)) continue;
 
                 var brand = ResolveBrand(profile, vendor, ls);
@@ -33,15 +36,18 @@ namespace Dupont_Price_Lists.Services.Builders
                 var customSku = ls?.GetField(profile.LightspeedCustomSkuField) ?? "";
                 var upc = ls?.GetField(profile.LightspeedUpcField) ?? vendor.GetField(profile.VendorUpcField ?? "");
 
-                var finish = vendor.GetField(profile.VendorFinishField ?? "");
-                var desc = vendor.GetField(profile.VendorDescriptionField ?? "");
+                var finish = GetVendor(vendor, profile.VendorFinishField);
+                var desc = GetVendor(vendor, profile.VendorDescriptionField);
+
                 var msrp = ResolveMsrp(vendor, ls, profile);
 
                 var finalDesc = BuildDescription(profile.NewDescriptionTemplate, brand, desc, finish, sku);
                 finalDesc = EnsureBrandDash(brand, finalDesc);
 
+                if (m.RecordType == "Found" && ls != null) finalDesc = desc;
+
                 // Category resolution: scan configured fields
-                var scanFields = profile.CategoryScanFields?.Count > 0 ? profile.CategoryScanFields : new List<string> { profile.VendorDescriptionField ?? "Description" };
+                var scanFields = profile.CategoryScanFields?.Count > 0 ? profile.CategoryScanFields : new List<string> { profile.VendorDescriptionField ?? "DESCRIPTION" };
                 var cat = categoryEngine.Resolve(vendor, scanFields) ?? "";
 
                 var brandKey = Services.Matching.MatchRetailOptions.DefaultNormalizer(brand) ?? "";

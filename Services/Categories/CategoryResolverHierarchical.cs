@@ -120,7 +120,7 @@ namespace Dupont_Price_Lists.Services.Categories
 
                 // supports "--" indentation format
                 var level = raw.Split(new[] { "--" }, StringSplitOptions.None).Length;
-                var name = raw.Replace("-", "").Trim();
+                var name = raw.Replace("-", "").Replace(">", "").Trim();
 
                 while (stack.Count >= level) stack.RemoveAt(stack.Count - 1);
                 stack.Add(name);
